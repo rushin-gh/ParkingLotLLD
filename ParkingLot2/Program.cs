@@ -9,6 +9,7 @@ var parkingManager = ParkingManager.Instance;
 // Concurrency demo: 50 cars arrive at the same time for 10 car spots.
 var tickets = new ConcurrentBag<Ticket>();
 var rejected = 0;
+var counterLock = new object();
 
 Parallel.For(0, 50, i =>
 {
@@ -19,7 +20,7 @@ Parallel.For(0, 50, i =>
     }
     catch (InvalidOperationException)
     {
-        Interlocked.Increment(ref rejected);
+        lock (counterLock) rejected++;
     }
 });
 
@@ -36,7 +37,7 @@ var exits = 0;
 Parallel.For(0, 10, _ =>
 {
     if (parkingManager.Unpark(new HourlyStratergy(), new CardPay(), ticket))
-        Interlocked.Increment(ref exits);
+        lock (counterLock) exits++;
 });
 
 Console.WriteLine($"Successful exits for one ticket: {exits}, spot now: {ticket.Spot.Status}, ticket now: {ticket.Status}");

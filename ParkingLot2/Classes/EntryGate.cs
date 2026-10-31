@@ -4,16 +4,24 @@ public class EntryGate
 {
     // Shared across all gates. Will come from the DB primary key later.
     private static int _lastTicketId;
+    private static readonly object _idLock = new();
 
     public Ticket IssueTicket(Vehicle veh, ParkingSpot spot)
     {
-        var ticket = new Ticket()
+        return new Ticket()
         {
-            Tid = Interlocked.Increment(ref _lastTicketId),
+            Tid = NextTicketId(),
             InTime = DateTime.Now,
             Spot = spot,
             Veh = veh
         };
-        return ticket;
+    }
+
+    private static int NextTicketId()
+    {
+        lock (_idLock)
+        {
+            return ++_lastTicketId;
+        }
     }
 }

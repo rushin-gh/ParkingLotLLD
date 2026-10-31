@@ -5,7 +5,7 @@ namespace ParkingLot2.Classes;
 public class ParkingLot
 {
     // The list itself never changes after construction, so reading it from many threads is safe.
-    // Only each spot's status changes, and that is done atomically inside ParkingSpot.
+    // Only each spot's status changes, and that is guarded by each spot's own lock.
     private readonly IReadOnlyList<ParkingSpot> _parkingSpots;
 
     public EntryGate entryGate { get; }

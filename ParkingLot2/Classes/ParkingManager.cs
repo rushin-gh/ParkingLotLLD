@@ -19,8 +19,8 @@ public sealed class ParkingManager
 
     public IReadOnlyList<ParkingSpot> Spots => parkingLot.ParkingSpots;
 
-    // No global lock: each spot is claimed with a compare-and-swap, so gates only
-    // compete when they want the exact same spot, and the loser moves to the next one.
+    // No global lock: each spot has its own lock, so gates only wait on each other
+    // when they want the exact same spot, and the loser moves to the next one.
     public Ticket Park(Vehicle veh)
     {
         var spot = parkingLot.TryHoldSpot(_spotStrategy, veh)

@@ -12,9 +12,15 @@ public class Ticket
 
     public required Vehicle Veh { get; init; }
 
-    private int _status = (int)TicketStatus.Active;
+    // Each ticket has its own lock, so different tickets never block each other.
+    private readonly object _lock = new();
 
-    public TicketStatus Status => (TicketStatus)Volatile.Read(ref _status);
+    private TicketStatus _status = TicketStatus.Active;
+
+    public TicketStatus Status
+    {
+        get { lock (_lock) return _status; }
+    }
 
     // Active -> Exiting. Stops the same ticket being processed twice at once.
     public bool TryBeginExit() => TryMove(TicketStatus.Active, TicketStatus.Exiting);
@@ -25,6 +31,15 @@ public class Ticket
     // Exiting -> Closed, after payment succeeded and the spot was freed.
     public bool TryClose() => TryMove(TicketStatus.Exiting, TicketStatus.Closed);
 
-    private bool TryMove(TicketStatus from, TicketStatus to) =>
-        Interlocked.CompareExchange(ref _status, (int)to, (int)from) == (int)from;
+    private bool TryMove(TicketStatus from, TicketStatus to)
+    {
+        lock (_lock)
+        {
+            if (_status != from)
+                return false;
+
+            _status = to;
+            return true;
+        }
+    }
 }

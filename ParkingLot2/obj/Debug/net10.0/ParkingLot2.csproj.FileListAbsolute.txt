@@ -12,3 +12,4 @@
 /Users/rushikeshnaikwadi/RiderProjects/MySpend-App/ParkingLot2/ParkingLot2/obj/Debug/net10.0/ParkingLot2.pdb
 /Users/rushikeshnaikwadi/RiderProjects/MySpend-App/ParkingLot2/ParkingLot2/obj/Debug/net10.0/ParkingLot2.genruntimeconfig.cache
 /Users/rushikeshnaikwadi/RiderProjects/MySpend-App/ParkingLot2/ParkingLot2/obj/Debug/net10.0/ref/ParkingLot2.dll
+/Users/rushikeshnaikwadi/RiderProjects/MySpend-App/ParkingLot2/ParkingLot2/obj/Debug/net10.0/ParkingLot2.sourcelink.json

@@ -14,10 +14,16 @@ public class ParkingSpot
 
     public VehicleType vehicleType { get; init; }
 
-    // Stored as int so it can be changed atomically with Interlocked.
-    private int _status = (int)ParkingSpotStatus.Free;
+    // Each spot has its own lock, so threads only wait on each other
+    // when they want the same spot.
+    private readonly object _lock = new();
 
-    public ParkingSpotStatus Status => (ParkingSpotStatus)Volatile.Read(ref _status);
+    private ParkingSpotStatus _status = ParkingSpotStatus.Free;
+
+    public ParkingSpotStatus Status
+    {
+        get { lock (_lock) return _status; }
+    }
 
     // Free -> Hold. Only one thread can win this for a given spot.
     public bool TryHold() => TryMove(ParkingSpotStatus.Free, ParkingSpotStatus.Hold);
@@ -31,6 +37,17 @@ public class ParkingSpot
     // Occupied -> Free. Returns false if the spot was not occupied (e.g. a double release).
     public bool TryRelease() => TryMove(ParkingSpotStatus.Occupied, ParkingSpotStatus.Free);
 
-    private bool TryMove(ParkingSpotStatus from, ParkingSpotStatus to) =>
-        Interlocked.CompareExchange(ref _status, (int)to, (int)from) == (int)from;
+    // The check and the update happen inside one lock, so no other thread can change
+    // the status in between.
+    private bool TryMove(ParkingSpotStatus from, ParkingSpotStatus to)
+    {
+        lock (_lock)
+        {
+            if (_status != from)
+                return false;
+
+            _status = to;
+            return true;
+        }
+    }
 }
